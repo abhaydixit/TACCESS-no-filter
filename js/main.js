@@ -1,5 +1,4 @@
 $(document).ready(__main__);
-
 import { signs as handSigns } from "./signs.js";
 
 function formatSignProperty(property) {
@@ -76,6 +75,8 @@ function getQuery(i, p) {
   return "i=" + i + "&p=" + p;
 }
 
+console.log(setIndexQuery.return);
+
 function loadGrid() {
   loadJSON("flow.json", function (flow) {
     let i = getParameter("i");
@@ -85,15 +86,19 @@ function loadGrid() {
       var signs_order = flow.Flow;
       var ks = LatinSquare(flow.Ks, p);
       var index = ks[i % ks.length];
-      var curr = signs_order[i];
+      //var curr = signs_order[i]
+      var curr = JSON.parse(localStorage.getItem("stimuliSignObject"));
+      console.log(curr);
       var total_signs_flow = signs_order.length;
     } else {
       var curr = flow.Sample;
+      //var curr = localStorage.getItem('stimuliSignObject')
       var index = curr["Index"];
       var total_signs_flow = 1;
     }
     let all_signs = flow.Signs;
     let display_modes = flow.Display_modes;
+    console.log(curr);
 
     if (curr) {
       var location = curr["Location"];
@@ -111,6 +116,7 @@ function loadGrid() {
         random.slice(),
         index
       );
+
       setDisplay(total_signs_flow, LatinSquare(display_modes, p), p, i);
     } else {
       var signs = shuffle(all_signs["Head"]);
@@ -121,11 +127,11 @@ function loadGrid() {
     let staticImage = !(
       $(".results-grid").hasClass("word") || $(".results-grid").hasClass("gif")
     );
+
     grid.forEach(function (name) {
       addImage(name, staticImage);
     });
-    bindResults(staticImage);
-    $(".number-of-signs").text(grid.length);
+    //bindResults(staticImage)
   });
 }
 
@@ -139,22 +145,6 @@ function setDisplay(total, modes, p, i) {
     $(".results-grid").addClass("gif");
   }
 }
-
-// function addImage(name, staticImage) {
-//   let id = name.split(" ").join("_");
-//   $(".results-grid").append(
-//     `<div class="result-box"> <div class="result-image" id="${id}"></div><div class="result-title"><p> ${name} </p></div></div>`
-//   );
-//   let curr = $(`#${id}`);
-//   if (staticImage) {
-//     var format = ".png";
-//   } else if ($(".results-grid").hasClass("gif")) {
-//     curr.addClass("gif");
-//     var format = ".gif";
-//   }
-
-//   curr.css("background-image", "url(../images/" + id + format);
-// }
 
 var filterReadySigns = {};
 
@@ -189,26 +179,42 @@ function addImage(name) {
   curr.css("background-image", "url(../images/" + id + ".gif");
 }
 
-function bindResults() {
-  $(".results-grid.word .result-box").hover(function () {
-    //$('.result-title').removeClass('hide-word');
-    $(this).find(".result-title").toggleClass("hide-word");
-  });
+// function addImage(name, staticImage) {
+//   let id = name.split(' ').join('_')
+//   $('.results-grid').append(
+//     `<div class="result-box"> <div class="result-image" id="${id}"></div><div class="result-title"><p> ${name} </p></div></div>`
+//   )
+//   let curr = $(`#${id}`)
+//   if (staticImage) {
+//     var format = '.png'
+//   } else if ($('.results-grid').hasClass('gif')) {
+//     curr.addClass('gif')
+//     var format = '.gif'
+//   }
 
-  $(".result-image").hover(function () {
-    let name = $(this).attr("id");
-    $(this).toggleClass("active");
-    if ($(this).hasClass("active")) {
-      $(this).css("background-image", "url(../images/" + name + ".gif)");
-    } else {
-      if (!$(this).hasClass("gif")) {
-        $(this).css("background-image", "url(../images/" + name + ".png)");
-      } else if ($(".results-grid").hasClass("word")) {
-        $(this).css("background-image", "none");
-      }
-    }
-  });
-}
+//   curr.css('background-image', 'url(../images/' + id + format)
+// }
+
+// function bindResults() {
+//   $('.results-grid.word .result-box').hover(function () {
+//     //$('.result-title').removeClass('hide-word');
+//     $(this).find('.result-title').toggleClass('hide-word')
+//   })
+
+//   $('.result-image').hover(function () {
+//     let name = $(this).attr('id')
+//     $(this).toggleClass('active')
+//     if ($(this).hasClass('active')) {
+//       $(this).css('background-image', 'url(../images/' + name + '.gif)')
+//     } else {
+//       if (!$(this).hasClass('gif')) {
+//         $(this).css('background-image', 'url(../images/' + name + '.png)')
+//       } else if ($('.results-grid').hasClass('word')) {
+//         $(this).css('background-image', 'none')
+//       }
+//     }
+//   })
+// }
 
 function loadJSON(filename, callback) {
   $.ajax({
@@ -265,7 +271,8 @@ function generateResults(sign, similar, handshape, location, random, index) {
   const MAX = 100;
   let grid = signs.concat(filler.splice(0, MAX - signs.length - 1));
   grid.splice(index, 0, sign);
-
+  localStorage.setItem("signs", JSON.stringify(grid));
+  $(".number-of-signs").text(grid.length);
   return grid;
 }
 
@@ -282,11 +289,23 @@ function getParameter(p) {
 function getVideo() {
   loadJSON("flow.json", function (flow) {
     let i = getParameter("i");
+    const p = getParameter("p");
     if (i >= 0) {
-      let sign_order = flow.Flow;
+      let sign_order = flow.Flow.slice(0, 24);
+      // var ks = LatinSquare(flow.Ks, p)
+      // var index = ks[i % ks.length]
+      // var curr = sign_order[index]
       var curr = sign_order[i];
+      if (i < 16) {
+        localStorage.setItem("stimuliSign", curr["Sign"]);
+        localStorage.setItem("stimuliSignObject", JSON.stringify(curr));
+        console.log(curr);
+      }
     } else {
       var curr = flow.Sample;
+      localStorage.setItem("stimuliSign", curr["Sign"]);
+      localStorage.setItem("stimuliSignObject", JSON.stringify(curr));
+      console.log(curr);
     }
     if (curr) {
       let videoFile = curr.Sign + ".mp4";
@@ -453,12 +472,37 @@ function backToTop() {
 //     return fetch('http://localhost:3004/dcg', options)
 //       .then((response) => response.json)
 //   }
+function replaceLocation(destination) {
+  const { origin, pathname } = window.location;
+  // pathname will be like /filter-prototype/pages/video.html
+  const appName = pathname.split("/")[1];
+  const i = getParameter("i");
+  const p = getParameter("p");
+  // redirect the user to video.html with incremented `i`
+  window.location.href = `${origin}/${
+    appName === "pages" ? appName : `${appName}/pages`
+  }/${destination}.html?i=${destination === "video" ? i + 1 : i}&p=${p}`;
+}
+
+// Added signs - start
+var el = document.getElementById("videoNext");
+if (el) {
+  el.addEventListener("click", videoNext, false);
+}
+// Added signs - end
+
+function videoNext() {
+  const date = new Date();
+  const startTime = date.getTime();
+  localStorage.setItem("startTime", startTime);
+  replaceLocation("record");
+}
 
 function __main__() {
   let path = getEndOfPath(window.location.pathname);
   let i = getParameter("i");
   loadJSON("flow.json", function (flow) {
-    let sign_order = flow.Flow;
+    let sign_order = flow.Flow.slice(0, 24);
     if (sign_order.length <= i) {
       $(".content").html("<h1>Thank you</h1>");
     }
@@ -466,17 +510,19 @@ function __main__() {
   if (path == "results.html") {
     setIndexQuery(i + 1, ".home a");
     loadGrid();
+    // console.log(SIGNS)
+    // SIGNS.forEach((sign) => addImage(sign.name))
     backToTop();
   } else if (path == "record.html") {
     getCamera();
     bindRecord();
   } else if (path == "video.html") {
-    setIndexQuery(i, ".next");
+    // setIndexQuery(i, ".next");
     getVideo();
   } else if (path == "index.html" || path == "") {
     bindParticipantCode(-1);
   } else if (path == "sample.html") {
     setIndexQuery(i, ".next");
-    bindResults();
+    //bindResults()
   }
 }
