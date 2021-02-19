@@ -22,6 +22,74 @@ function getCamera() {
   }
 }
 
+async function logTime() {
+  try {
+    const sign = localStorage.getItem("stimuliSign");
+    const endTime = Number(
+      localStorage.getItem("endTime") == null
+        ? new Date().getTime()
+        : localStorage.getItem("endTime")
+    );
+
+    const startTime = Number(localStorage.getItem("startTime"));
+    const startDate = new Date(startTime);
+    const endDate = new Date(endTime);
+    // time elapsed for a sign
+    const timeElapsed = Math.round((endTime - startTime) / 1000);
+    const signStats = {
+      sign,
+      startTime: startDate.toISOString(),
+      endTime: endDate.toISOString(),
+      timeElapsed,
+      participantCode: getParameter("p"),
+      signCode: getParameter("i"),
+    };
+
+    console.log(JSON.stringify(signStats));
+    await fetch("http://localhost:5000/create", {
+      method: "POST",
+      mode: "no-cors",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(signStats),
+    });
+
+    console.log("Logged time for participant", signStats);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    localStorage.removeItem("endTime");
+    localStorage.removeItem("startTime");
+    //replaceLocation('video')
+  }
+}
+
+// adds onclick listner to next log the time
+var nextBtn = document.getElementById("next");
+if (nextBtn) {
+  next.addEventListener("click", function () {
+    console.log("Logging time now!");
+    logTime();
+  });
+}
+
+// adds onclick listner to result imgs to log the time
+var clickedSign = document.getElementById("signs");
+if (clickedSign) {
+  clickedSign.addEventListener("click", function (e) {
+    if (e.target && e.target.nodeName == "DIV") {
+      if (e.target.className === "result-image") {
+        const date = new Date();
+        const endTime = date.getTime();
+        console.log("End time set");
+        localStorage.setItem("endTime", endTime);
+      }
+    }
+  });
+}
+
 function bindRecord() {
   $(".record-button").click(function () {
     if ($(this).hasClass("stop")) {
