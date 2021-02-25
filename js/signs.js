@@ -2079,7 +2079,7 @@ export const signs = [
   },
   {
     URL: "./images/Save-money.gif",
-    name: "Save money",
+    name: "Save-money",
     handshape: "Flattened O",
 
     hands: "Two-handed, Asymmetrical",
