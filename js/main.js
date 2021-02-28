@@ -112,6 +112,10 @@ if (clickedSign) {
 function bindRecord() {
   $(".record-button").click(function () {
     if ($(this).hasClass("stop")) {
+      const date = new Date();
+      const startTime = date.getTime();
+      localStorage.setItem("startTime", startTime);
+      console.log("Started logging time now!");
       showResults($(this));
     } else {
       countdown($(this));
